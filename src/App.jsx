@@ -375,14 +375,16 @@ ${PATTERNS.map(p => `- "${p.theme}" (${p.count}x, trend: ${p.trend}, stages: ${p
 VC RELATIONSHIPS (${VC_RELATIONSHIPS.length}):
 ${VC_RELATIONSHIPS.map(v => `- ${v.firm} [${v.tier}]: ${v.signals} signals, ${v.engagements} engagements, contacts: ${v.contacts.join(', ')}, last touch: ${v.lastTouch}`).join('\n')}
 
-After your analysis, output a JSON block on a new line starting with |||JSON||| and ending with |||END||| in this exact format:
+You MUST end every response with a JSON block in this exact format — no exceptions, even if no signals matched:
 |||JSON|||
 {"matchedSignalIds": [1, 4], "matchedPatternIds": [2]}
 |||END|||
 
-matchedSignalIds should contain the IDs of signals you referenced (use the signal ordering 1-15 matching the list above).
-matchedPatternIds should contain the IDs of patterns you referenced (1-5 matching the list above).
-Only include IDs you actually referenced in your answer.`;
+matchedSignalIds: IDs of signals relevant to the question (signals are numbered 1–${SIGNALS.length} in order above). Always include every signal that is relevant — err toward more, not fewer.
+matchedPatternIds: IDs of patterns relevant to the question (patterns are numbered 1–${PATTERNS.length} in order above).
+If nothing matched, output: |||JSON|||
+{"matchedSignalIds": [], "matchedPatternIds": []}
+|||END|||`;
 
 // ─── MAIN APP ───
 export default function SignalBoard() {
@@ -408,7 +410,7 @@ export default function SignalBoard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-sonnet-4-6",
           max_tokens: 1000,
           system: SONAR_CONTEXT,
           messages: [{ role: "user", content: searchQuery }],
