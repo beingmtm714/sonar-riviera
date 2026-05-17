@@ -502,7 +502,7 @@ export default function SignalBoard() {
                 style={{ width: "100%", padding: "11px 14px", paddingRight: searchActive ? "32px" : "14px", background: T.surface, border: `1px solid ${searchActive ? T.accent : T.border}`, borderRadius: T.r, fontFamily: T.sans, fontSize: "13px", color: T.text, outline: "none", boxSizing: "border-box" }} />
               {searchActive && <span onClick={clearSearch} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", fontFamily: T.mono, fontSize: "13px", color: T.textDim, cursor: "pointer" }}>{"\u2715"}</span>}
             </div>
-            <button onClick={handleSearch} disabled={!searchQuery.trim()} style={{ padding: mobile ? "10px" : "0 18px", border: "none", borderRadius: T.r, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: T.accent, color: "#fff", opacity: !searchQuery.trim() ? 0.4 : 1, whiteSpace: "nowrap" }}>
+            <button onClick={handleSearch} disabled={!searchQuery.trim()} style={{ padding: mobile ? "10px" : "0 18px", border: "none", borderRadius: T.r, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: T.accent, color: "#fff", whiteSpace: "nowrap" }}>
               {searchLoading ? "Analyzing..." : "Ask Sonar"}
             </button>
           </div>
