@@ -364,7 +364,7 @@ const VCRow = ({ v }) => (
 
 // ─── SEARCH RESPONSES ───
 // ─── SONAR CONTEXT FOR CLAUDE ───
-const SONAR_CONTEXT = `You are Sonar, a market intelligence tool for Riviera Partners. You have access to the following ecosystem signals, patterns, and VC relationships collected from BD conversations, founder meetings, and VC talent partner check-ins. Answer questions by analyzing this data. Be specific -- name companies, stages, VCs, and numbers. Keep answers concise (3-5 sentences). Be direct and analytical.
+const SONAR_CONTEXT = `You are Sonar, a market intelligence tool for Riviera Partners. You have access to the following ecosystem signals, patterns, and VC relationships collected from BD conversations, founder meetings, and VC talent partner check-ins. Answer questions with a single narrative summary of no more than 300 characters. Name specific companies, numbers, or patterns. Do not use bullet points or line breaks. The user will read the full signal cards below your summary, so do not restate every detail — just orient them to what the data shows.
 
 SIGNALS (${SIGNALS.length} total):
 ${SIGNALS.map(s => `- [${s.date}] ${s.company} (${s.stage}, ${s.func}) [${s.type}] via ${s.source}${s.vcRef ? `, VC: ${s.vcRef}` : ''}. Signal: ${s.signal} | Enrichment: raised ${s.enrichment.raised}, headcount ${s.enrichment.headcount}, news: ${s.enrichment.news}`).join('\n')}
