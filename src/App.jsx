@@ -333,9 +333,9 @@ const DailyPrepModule = ({ mobile, onIntegrationOpen }) => {
   const CARD_H = 160;
 
   return (
-    <div style={{ background: T.surface, borderRadius: T.r, border: `1px solid ${T.border}`, overflow: "hidden", marginBottom: "14px" }}>
+    <div style={{ marginBottom: "20px" }}>
       {/* HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: mobile ? "10px 12px" : "12px 16px", borderBottom: `1px solid ${T.borderSubtle}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
         <span style={{ fontFamily: T.mono, fontSize: "11px", fontWeight: 600, color: T.text, textTransform: "uppercase", letterSpacing: "0.04em" }}>Daily Prep</span>
         <div style={{ display: "flex", gap: "4px" }}>
           {[["day", "Today"], ["week", "This Week"]].map(([p, label]) => (
@@ -347,13 +347,13 @@ const DailyPrepModule = ({ mobile, onIntegrationOpen }) => {
       {/* MEETINGS ROW */}
       {upcomingFiltered.length > 0 && (
         <div style={{ borderBottom: expandedMeeting ? `1px solid ${T.borderSubtle}` : "none" }}>
-          <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.text, textTransform: "uppercase", letterSpacing: "0.06em", padding: mobile ? "10px 12px 6px" : "12px 16px 6px" }}>Meetings · {upcomingFiltered.length}</div>
-          <div style={{ display: "flex", gap: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", padding: mobile ? "0 12px 12px" : "0 16px 14px" }}>
+          <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.text, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Meetings · {upcomingFiltered.length}</div>
+          <div style={{ display: "flex", gap: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", padding: "0 0 4px" }}>
             {upcomingFiltered.map(meeting => {
               const isActive = expandedMeeting === meeting.id;
               return (
                 <div key={meeting.id} onClick={() => setExpandedMeeting(isActive ? null : meeting.id)}
-                  style={{ width: CARD_W, minWidth: CARD_W, height: CARD_H, flexShrink: 0, borderRadius: T.r, border: `1px solid ${isActive ? T.accent : T.borderSubtle}`, background: isActive ? T.surfaceActive : T.bg, cursor: "pointer", padding: "12px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
+                  style={{ width: CARD_W, minWidth: CARD_W, height: CARD_H, flexShrink: 0, borderRadius: T.r, border: `1px solid ${isActive ? T.accent : T.borderSubtle}`, background: isActive ? T.surfaceActive : T.surface, cursor: "pointer", padding: "12px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
                   <div>
                     <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.amber, marginBottom: "6px", letterSpacing: "0.02em" }}>{meeting.time}</div>
                     <div style={{ fontFamily: T.sans, fontSize: "12px", fontWeight: 600, color: T.text, lineHeight: "1.35", marginBottom: "5px" }}
@@ -385,8 +385,8 @@ const DailyPrepModule = ({ mobile, onIntegrationOpen }) => {
         const signalEntry = meeting.company ? Object.entries(SIGNAL_ACTIONS).find(([sid]) => SIGNALS.find(x => x.id === parseInt(sid))?.company === meeting.company) : null;
         const actions = signalEntry ? signalEntry[1] : null;
         return (
-          <div style={{ padding: mobile ? "12px" : "14px 16px", borderBottom: actionItems.length > 0 ? `1px solid ${T.borderSubtle}` : "none" }}>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "12px" }}>
+          <div style={{ padding: "14px 0", borderBottom: actionItems.length > 0 ? `1px solid ${T.borderSubtle}` : "none" }}>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", flexDirection: mobile ? "column" : "row", marginBottom: "12px" }}>
               {relatedSignals.length > 0 && (
                 <div style={{ flex: "1 1 280px", padding: "10px 12px", background: T.bg, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
                   <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "7px" }}>Relationship Context</div>
@@ -439,10 +439,10 @@ const DailyPrepModule = ({ mobile, onIntegrationOpen }) => {
       {/* ACTION ITEMS ROW */}
       {actionItems.length > 0 && (
         <div>
-          <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.text, textTransform: "uppercase", letterSpacing: "0.06em", padding: mobile ? "10px 12px 6px" : "12px 16px 6px" }}>Action Items · {actionItems.length} due</div>
-          <div style={{ display: "flex", gap: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", padding: mobile ? "0 12px 12px" : "0 16px 14px" }}>
+          <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.text, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Action Items · {actionItems.length} due</div>
+          <div style={{ display: "flex", gap: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", padding: "0 0 4px" }}>
             {actionItems.map(item => (
-              <div key={item.id} style={{ width: CARD_W, minWidth: CARD_W, height: CARD_H - 20, flexShrink: 0, borderRadius: T.r, border: `1px solid ${T.borderSubtle}`, background: T.bg, padding: "12px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
+              <div key={item.id} style={{ width: CARD_W, minWidth: CARD_W, height: CARD_H - 20, flexShrink: 0, borderRadius: T.r, border: `1px solid ${T.borderSubtle}`, background: T.surface, padding: "12px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
                 <div>
                   <div style={{ marginBottom: "6px" }}><Tag label={catLabel[item.category]} color={catColor[item.category]} bg={catBg[item.category]} /></div>
                   {item.company && <div style={{ fontFamily: T.sans, fontSize: "12px", fontWeight: 600, color: T.text, marginBottom: "4px" }}>{item.company}</div>}
@@ -461,7 +461,7 @@ const DailyPrepModule = ({ mobile, onIntegrationOpen }) => {
       )}
 
       {upcomingFiltered.length === 0 && actionItems.length === 0 && (
-        <div style={{ textAlign: "center", padding: "20px", fontFamily: T.mono, fontSize: "10px", color: T.textDim }}>No meetings or actions for this period</div>
+        <div style={{ textAlign: "center", padding: "16px 0", fontFamily: T.mono, fontSize: "10px", color: T.textDim }}>No meetings or actions for this period</div>
       )}
     </div>
   );
@@ -940,6 +940,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: T.sans }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 100, background: T.bg }}>
       {/* HEADER */}
       <div style={{ borderBottom: `1px solid ${T.borderSubtle}`, padding: `0 ${px}` }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "48px" }}>
@@ -966,7 +967,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
       </div>
 
       {/* NAV */}
-      <div style={{ borderBottom: `1px solid ${T.borderSubtle}`, padding: `0 ${px}`, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+      <div style={{ borderBottom: `1px solid ${T.borderSubtle}`, padding: `0 ${px}`, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", height: "36px", alignItems: "center" }}>
           {[
             { label: "Daily Prep", scrollId: "section-prep" },
@@ -982,6 +983,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
           ))}
         </div>
       </div>
+      </div>{/* /sticky */}
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: `16px ${px}` }}>
         {/* DAILY PREP */}
