@@ -135,6 +135,42 @@ const ScrollRow = ({ children, style: s }) => (
   </div>
 );
 
+// ─── TOOLTIP ───
+const TOOLTIPS = {
+  intake: "Every meeting you take generates signal. Connect your notetaker and Sonar auto-extracts structured intel — company, stage, signal type, VC ref — without manual entry. The longer you run it, the richer the dataset.",
+  signals: "The raw intelligence layer. Each card is a signal captured from a real conversation — filtered by function, stage, and type. Expand any card to see enrichment data pulled from Crunchbase, LinkedIn, and news.",
+  patterns: "Sonar aggregates signals into themes across your whole conversation history. When four Series A founders ask the same question in a month, that's not noise — it's a pattern worth acting on.",
+  vcs: "Tracks which VC relationships are generating signal and converting to commercial engagements. The progress bar measures against a 12-month target. Attribution flows from first conversation to signed search.",
+  askSonar: "Natural language search across all signals, patterns, and live web data. Ask it anything about the market — it synthesizes your proprietary conversation data with current news and returns a grounded answer.",
+};
+const Tooltip = ({ id, children }) => {
+  const [visible, setVisible] = useState(false);
+  const text = TOOLTIPS[id];
+  if (!text) return children;
+  return (
+    <div
+      style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+    >
+      {children}
+      <span style={{ marginLeft: "5px", fontSize: "10px", color: T.textDim, cursor: "default", lineHeight: 1, userSelect: "none" }}>ⓘ</span>
+      {visible && (
+        <div style={{
+          position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+          background: T.surfaceActive, border: `1px solid ${T.border}`, borderRadius: T.r,
+          padding: "10px 12px", width: "260px", zIndex: 100,
+          fontFamily: T.sans, fontSize: "12px", color: T.textMuted, lineHeight: "1.55",
+          boxShadow: T.shadow, pointerEvents: "none",
+        }}>
+          {text}
+          <div style={{ position: "absolute", bottom: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "8px", height: "8px", background: T.surfaceActive, borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }} />
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── INTAKE MODULE ───
 const IntakeModule = ({ mobile }) => {
   const [intakeMode, setIntakeMode] = useState("calendar");
@@ -160,7 +196,7 @@ const IntakeModule = ({ mobile }) => {
     <div style={{ background: T.surface, borderRadius: T.r, border: `1px solid ${T.border}`, overflow: "hidden" }}>
       <div onClick={() => setCollapsed(!collapsed)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: mobile ? "10px 12px" : "12px 16px", cursor: "pointer", borderBottom: collapsed ? "none" : `1px solid ${T.borderSubtle}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          <span style={{ fontFamily: T.mono, fontSize: "11px", fontWeight: 600, color: T.text, textTransform: "uppercase", letterSpacing: "0.04em" }}>Signal Intake</span>
+          <Tooltip id="intake"><span style={{ fontFamily: T.mono, fontSize: "11px", fontWeight: 600, color: T.text, textTransform: "uppercase", letterSpacing: "0.04em" }}>Signal Intake</span></Tooltip>
           {unsyncedCount > 0 && <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.bg, background: T.accent, borderRadius: "8px", padding: "1px 7px", fontWeight: 600 }}>{unsyncedCount}</span>}
           {!mobile && <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.green }}>{connectedCount} sources</span>}
           {!mobile && autosyncCount > 0 && <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.amber }}>{autosyncCount} autosync</span>}
@@ -514,9 +550,11 @@ export default function SignalBoard() {
                 style={{ width: "100%", padding: "11px 14px", paddingRight: searchActive ? "32px" : "14px", background: T.surface, border: `1px solid ${searchActive ? T.accent : T.border}`, borderRadius: T.r, fontFamily: T.sans, fontSize: "13px", color: T.text, outline: "none", boxSizing: "border-box" }} />
               {searchActive && <span onClick={clearSearch} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", fontFamily: T.mono, fontSize: "13px", color: T.textDim, cursor: "pointer" }}>{"\u2715"}</span>}
             </div>
-            <button onClick={handleSearch} disabled={!searchQuery.trim()} style={{ padding: mobile ? "10px" : "0 18px", border: "none", borderRadius: T.r, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: T.accent, color: "#fff", whiteSpace: "nowrap" }}>
-              {searchLoading ? "Analyzing..." : "Ask Sonar"}
-            </button>
+            <Tooltip id="askSonar">
+              <button onClick={handleSearch} disabled={!searchQuery.trim()} style={{ padding: mobile ? "10px" : "0 18px", border: "none", borderRadius: T.r, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: T.accent, color: "#fff", whiteSpace: "nowrap" }}>
+                {searchLoading ? "Analyzing..." : "Ask Sonar"}
+              </button>
+            </Tooltip>
           </div>
 
           {searchActive && searchResult && (
@@ -583,8 +621,10 @@ export default function SignalBoard() {
         {/* TABS + TIME */}
         <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: mobile ? "8px" : "0", marginBottom: "14px" }}>
           <ScrollRow>
-            {[["signals", "Signals"], ["patterns", "Patterns"], ["vcs", "VCs"]].map(([k, label]) => (
-              <button key={k} onClick={() => setTab(k)} style={{ padding: "7px 14px", borderRadius: "4px", border: `1px solid ${tab === k ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: tab === k ? T.surfaceActive : "transparent", color: tab === k ? T.text : T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{label}</button>
+            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"]].map(([k, label, tip]) => (
+              <Tooltip key={k} id={tip}>
+                <button onClick={() => setTab(k)} style={{ padding: "7px 14px", borderRadius: "4px", border: `1px solid ${tab === k ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: tab === k ? T.surfaceActive : "transparent", color: tab === k ? T.text : T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{label}</button>
+              </Tooltip>
             ))}
           </ScrollRow>
           <ScrollRow>
