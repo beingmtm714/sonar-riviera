@@ -142,6 +142,12 @@ const TIME_PERIODS = [
   { key: "1y", label: "Year", days: 365 }, { key: "all", label: "All", days: Infinity },
 ];
 const TODAY = new Date("2026-05-16");
+const COMPANY_OKRS = [
+  { label: "Search Mandates from BD Pipeline", current: 2, target: 6, color: "#4F8CFF" },
+  { label: "VC Relationships Generating Pipeline", current: 5, target: 12, color: "#34D399" },
+  { label: "Signal-to-Mandate Conversion", current: 13, target: 20, unit: "%", color: "#A78BFA" },
+  { label: "Net New Enterprise Accounts", current: 3, target: 6, color: "#FBBF24" },
+];
 const filterByTime = (dateStr, periodKey) => {
   if (periodKey === "all") return true;
   const p = TIME_PERIODS.find(x => x.key === periodKey);
@@ -176,6 +182,7 @@ const TOOLTIPS = {
   patterns: "Sonar aggregates signals into themes across your whole conversation history. When four Series A founders ask the same question in a month, that's not noise — it's a pattern worth acting on.",
   vcs: "Tracks which VC relationships are generating signal and converting to commercial engagements. The progress bar measures against a 12-month target. Attribution flows from first conversation to signed search.",
   askSonar: "Natural language search across all signals, patterns, and live web data. Ask it anything about the market — it synthesizes your proprietary conversation data with current news and returns a grounded answer.",
+  brief: "Your monthly performance brief for executive distribution. Surfaces BD activity, VC pipeline conversion, and pattern intelligence in a shareable format. The OKRs and metrics shown can be customized per user — individual contributors track to personal targets while all metrics roll up to firm-wide quarterly goals.",
 };
 const Tooltip = ({ id, children }) => {
   const [coords, setCoords] = useState(null);
@@ -1094,7 +1101,7 @@ Each bullet must name specific companies or VCs and include a number. 13-18 word
         {/* TABS + TIME */}
         <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: mobile ? "8px" : "0", marginBottom: "14px" }}>
           <ScrollRow>
-            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"], ["brief", "Exec Brief", null]].map(([k, label, tip]) => {
+            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"], ["brief", "Exec Brief", "brief"]].map(([k, label, tip]) => {
               const btn = <button key={k} onClick={() => setTab(k)} style={{ padding: "7px 14px", borderRadius: "4px", border: `1px solid ${tab === k ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: tab === k ? T.surfaceActive : "transparent", color: tab === k ? T.text : T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{label}</button>;
               return tip ? <Tooltip key={k} id={tip}>{btn}</Tooltip> : <React.Fragment key={k}>{btn}</React.Fragment>;
             })}
@@ -1236,6 +1243,42 @@ Each bullet must name specific companies or VCs and include a number. 13-18 word
                 }
               </div>
 
+              <div style={{ marginBottom: "14px", padding: "16px 20px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
+                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>OKR Progress</div>
+                <div style={{ marginBottom: "18px" }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Individual · May 2026</div>
+                  <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "14px" }}>
+                    {OKRs.map(({ label, current, target, color }) => (
+                      <div key={label}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "5px" }}>
+                          <span style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted }}>{label}</span>
+                          <span style={{ fontFamily: T.mono, fontSize: "12px", fontWeight: 700, color }}>{current}<span style={{ color: T.textDim, fontWeight: 400 }}>/{target}</span></span>
+                        </div>
+                        <div style={{ height: "5px", background: T.bg, borderRadius: "3px", overflow: "hidden" }}>
+                          <div style={{ width: `${Math.min((current / target) * 100, 100)}%`, height: "100%", background: color, borderRadius: "3px", transition: "width 0.6s ease" }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ borderTop: `1px solid ${T.borderSubtle}`, paddingTop: "16px" }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Company · Q2 2026</div>
+                  <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "14px" }}>
+                    {COMPANY_OKRS.map(({ label, current, target, unit, color }) => (
+                      <div key={label}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "5px" }}>
+                          <span style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted }}>{label}</span>
+                          <span style={{ fontFamily: T.mono, fontSize: "12px", fontWeight: 700, color }}>{current}{unit || ""}<span style={{ color: T.textDim, fontWeight: 400 }}>/{target}{unit || ""}</span></span>
+                        </div>
+                        <div style={{ height: "5px", background: T.bg, borderRadius: "3px", overflow: "hidden" }}>
+                          <div style={{ width: `${Math.min((current / target) * 100, 100)}%`, height: "100%", background: color, borderRadius: "3px", transition: "width 0.6s ease" }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "10px", marginBottom: "14px" }}>
                 <div style={{ padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
                   <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>Signal Cadence · Last 8 Weeks</div>
@@ -1255,22 +1298,7 @@ Each bullet must name specific companies or VCs and include a number. 13-18 word
                 </div>
               </div>
 
-              <div style={{ padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
-                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>OKR Progress</div>
-                <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
-                  {OKRs.map(({ label, current, target, color }) => (
-                    <div key={label}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
-                        <span style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted }}>{label}</span>
-                        <span style={{ fontFamily: T.mono, fontSize: "12px", fontWeight: 700, color }}>{current}<span style={{ color: T.textDim, fontWeight: 400 }}>/{target}</span></span>
-                      </div>
-                      <div style={{ height: "6px", background: T.bg, borderRadius: "3px", overflow: "hidden" }}>
-                        <div style={{ width: `${Math.min((current / target) * 100, 100)}%`, height: "100%", background: color, borderRadius: "3px", transition: "width 0.6s ease" }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+
             </div>
           );
         })()}
