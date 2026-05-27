@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 // ─── RESPONSIVE HOOK ───
 const useIsMobile = (breakpoint = 640) => {
@@ -144,28 +145,41 @@ const TOOLTIPS = {
   askSonar: "Natural language search across all signals, patterns, and live web data. Ask it anything about the market — it synthesizes your proprietary conversation data with current news and returns a grounded answer.",
 };
 const Tooltip = ({ id, children }) => {
-  const [visible, setVisible] = useState(false);
+  const [coords, setCoords] = useState(null);
+  const ref = useRef(null);
   const text = TOOLTIPS[id];
-  if (!text) return children;
+
+  const show = () => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    const above = r.top > window.innerHeight * 0.45;
+    setCoords({
+      left: r.left + r.width / 2 + window.scrollX,
+      y: above ? r.top + window.scrollY - 10 : r.bottom + window.scrollY + 10,
+      above,
+    });
+  };
+
+  if (!text) return <>{children}</>;
   return (
-    <div
-      style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-    >
+    <div ref={ref} style={{ display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={show} onMouseLeave={() => setCoords(null)}>
       {children}
-      <span style={{ marginLeft: "5px", fontSize: "10px", color: T.textDim, cursor: "default", lineHeight: 1, userSelect: "none" }}>ⓘ</span>
-      {visible && (
+      <span style={{ marginLeft: "6px", fontSize: "12px", color: T.accent, cursor: "default", lineHeight: 1, userSelect: "none", opacity: 0.8 }}>ⓘ</span>
+      {coords && createPortal(
         <div style={{
-          position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+          position: "absolute",
+          top: coords.y,
+          left: coords.left,
+          transform: coords.above ? "translate(-50%, -100%)" : "translate(-50%, 0)",
           background: T.surfaceActive, border: `1px solid ${T.border}`, borderRadius: T.r,
-          padding: "10px 12px", width: "260px", zIndex: 100,
-          fontFamily: T.sans, fontSize: "12px", color: T.textMuted, lineHeight: "1.55",
+          padding: "10px 13px", width: "270px", zIndex: 9999,
+          fontFamily: T.sans, fontSize: "12px", color: T.textMuted, lineHeight: "1.6",
           boxShadow: T.shadow, pointerEvents: "none",
         }}>
           {text}
-          <div style={{ position: "absolute", bottom: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "8px", height: "8px", background: T.surfaceActive, borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }} />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -710,7 +724,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
         {/* TABS + TIME */}
         <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: mobile ? "8px" : "0", marginBottom: "14px" }}>
           <ScrollRow>
-            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"], ["brief", "BD Brief", null]].map(([k, label, tip]) => {
+            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"], ["brief", "Exec Brief", null]].map(([k, label, tip]) => {
               const btn = <button key={k} onClick={() => setTab(k)} style={{ padding: "7px 14px", borderRadius: "4px", border: `1px solid ${tab === k ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: tab === k ? T.surfaceActive : "transparent", color: tab === k ? T.text : T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{label}</button>;
               return tip ? <Tooltip key={k} id={tip}>{btn}</Tooltip> : <React.Fragment key={k}>{btn}</React.Fragment>;
             })}
@@ -803,7 +817,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
             <div id="brief-content">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
                 <div>
-                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>Monthly BD Brief</div>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>Executive Brief</div>
                   <div style={{ fontFamily: T.sans, fontSize: "22px", fontWeight: 700, color: T.text, letterSpacing: "-0.02em" }}>May 2026</div>
                 </div>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
