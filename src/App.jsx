@@ -885,39 +885,63 @@ export default function SignalBoard() {
   };
   const clearSearch = () => { setSearchQuery(""); setSearchActive(false); setSearchResult(null); };
 
+  const cleanBriefText = (raw) => raw
+    .split("\n")
+    .filter(line => {
+      const t = line.trim().toLowerCase();
+      if (!t) return false;
+      if (/^-{3,}$/.test(t)) return false;
+      if (t.startsWith("i can") || t.startsWith("i don") || t.startsWith("i wasn")) return false;
+      if (t.startsWith("if you")) return false;
+      if (t.startsWith("note:") || t.startsWith("here is") || t.startsWith("here's")) return false;
+      if (t.startsWith("based on the") || t.startsWith("using the data") || t.startsWith("the brief")) return false;
+      if (t.startsWith("the data you") || t.startsWith("the information")) return false;
+      return true;
+    })
+    .join("\n")
+    .trim();
+
   const generateBrief = async () => {
     setBriefLoading(true);
     try {
       const briefSignals = SIGNALS.filter(s => filterByTime(s.date, "1m"));
+      const companies = [...new Set(briefSignals.map(s => s.company))].join(", ");
       const typeBreakdown = Object.entries(
         briefSignals.reduce((acc, s) => ({ ...acc, [s.type]: (acc[s.type] || 0) + 1 }), {})
       ).map(([k, v]) => `${v} ${TYPE_LABELS_FULL[k]}`).join(", ");
       const topVCs = Object.entries(
         briefSignals.reduce((acc, s) => ({ ...acc, [s.vcRef]: (acc[s.vcRef] || 0) + 1 }), {})
-      ).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} (${v})`).join(", ");
-      const trendingPatterns = PATTERNS.filter(p => p.trend === "up").map(p => p.theme).join("; ");
+      ).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => `${k} (${v} signals)`).join(", ");
+      const trendingPatterns = PATTERNS.filter(p => p.trend === "up").map(p => `${p.theme} (${p.count}x)`).join("; ");
+      const activeVCList = VC_RELATIONSHIPS.filter(v => v.tier === "active").map(v => v.firm).join(", ");
 
-      const prompt = `BD performance this month:
-Signals: ${briefSignals.length} captured across ${new Set(briefSignals.map(s => s.company)).size} companies. Breakdown: ${typeBreakdown}. Top VC sources: ${topVCs}.
-VC pipeline: ${activeVCs} active relationships of ${VC_RELATIONSHIPS.length} tracked. ${VC_RELATIONSHIPS.filter(v => v.tier === "building").length} building. ${totalEngagements} commercial engagements attributed.
-Trending patterns: ${trendingPatterns}.
+      const prompt = `Write a 4-bullet executive brief for distribution to Riviera's search practice and advisory team. Output ONLY the bullets — no intro, no caveats, no notes to the reader.
 
-Write a 3-sentence executive summary of this BD activity. Name specific companies, VCs, and numbers. Direct and analytical — no filler.`;
+Data:
+- Companies engaged this month: ${companies}
+- Signal breakdown: ${typeBreakdown}
+- Top VC sources: ${topVCs}
+- Active VC relationships (${activeVCs} of ${VC_RELATIONSHIPS.length}): ${activeVCList}
+- Commercial engagements attributed: ${totalEngagements}
+- Trending patterns: ${trendingPatterns}
+
+Each bullet must name specific companies or VCs and include a number. 13-18 words per bullet. No hedging, no meta-commentary.`;
 
       const response = await fetch("/.netlify/functions/claude", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
-          max_tokens: 300,
+          max_tokens: 450,
           skipWebSearch: true,
-          system: "You write concise executive BD briefs for a talent advisory firm. Be specific and direct.",
+          system: "You write executive BD briefs for a talent advisory firm. Output ONLY the requested bullets. No preamble, no caveats, no explanations, no closing remarks — just the bullets.",
           messages: [{ role: "user", content: prompt }],
         }),
       });
       const data = await response.json();
       if (data.content) {
-        setBriefNarrative(data.content.filter(i => i.type === "text").map(i => i.text).join(""));
+        const raw = data.content.filter(i => i.type === "text").map(i => i.text).join("");
+        setBriefNarrative(cleanBriefText(raw));
       } else {
         setBriefNarrative(`Error: ${data.error?.message || "No response."}`);
       }
@@ -1191,10 +1215,23 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
                 ))}
               </div>
 
-              <div style={{ marginBottom: "14px", padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${briefNarrative ? T.accent : T.borderSubtle}` }}>
-                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Executive Summary</div>
+              <div style={{ marginBottom: "14px", padding: "16px 20px", background: T.surface, borderRadius: T.r, border: `1px solid ${briefNarrative ? T.accent : T.borderSubtle}` }}>
+                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Executive Summary</div>
                 {briefNarrative
-                  ? <p style={{ fontFamily: T.sans, fontSize: "13px", color: T.text, lineHeight: "1.7", margin: 0 }}>{briefNarrative}</p>
+                  ? <div>
+                      {briefNarrative.split("\n").filter(l => l.trim()).map((line, i) => {
+                        const isBullet = /^[-•*]\s/.test(line.trim());
+                        const text = line.trim().replace(/^[-•*]\s*/, "");
+                        return isBullet ? (
+                          <div key={i} style={{ display: "flex", gap: "12px", alignItems: "flex-start", marginBottom: "10px" }}>
+                            <span style={{ color: T.accent, fontFamily: T.mono, fontSize: "12px", lineHeight: "1.6", flexShrink: 0 }}>•</span>
+                            <span style={{ fontFamily: T.sans, fontSize: "13px", color: T.text, lineHeight: "1.6" }}>{text}</span>
+                          </div>
+                        ) : (
+                          <p key={i} style={{ fontFamily: T.sans, fontSize: "13px", color: T.text, lineHeight: "1.7", margin: "0 0 10px 0" }}>{text}</p>
+                        );
+                      })}
+                    </div>
                   : <p style={{ fontFamily: T.sans, fontSize: "13px", color: T.textDim, lineHeight: "1.7", margin: 0, fontStyle: "italic" }}>Hit "Generate Narrative" to produce a Claude-written executive summary from this month's signal data.</p>
                 }
               </div>
