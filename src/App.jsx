@@ -965,21 +965,46 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
         </div>
       </div>
 
+      {/* NAV */}
+      <div style={{ borderBottom: `1px solid ${T.borderSubtle}`, padding: `0 ${px}`, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", height: "36px", alignItems: "center" }}>
+          {[
+            { label: "Daily Prep",  scrollId: "section-prep",    switchTab: null },
+            { label: "Ask Sonar",   scrollId: "section-search",  switchTab: null },
+            { label: "Signals",     scrollId: "section-signals", switchTab: "signals" },
+            { label: "Patterns",    scrollId: "section-signals", switchTab: "patterns" },
+            { label: "VCs",         scrollId: "section-signals", switchTab: "vcs" },
+            { label: "Brief",       scrollId: "section-signals", switchTab: "brief" },
+            { label: "Data Sync",   scrollId: "section-sync",    switchTab: null },
+          ].map(({ label, scrollId, switchTab }) => (
+            <button key={label}
+              onClick={() => {
+                if (switchTab) setTab(switchTab);
+                setTimeout(() => document.getElementById(scrollId)?.scrollIntoView({ behavior: "smooth", block: "start" }), switchTab ? 50 : 0);
+              }}
+              style={{ padding: "0 14px", height: "36px", border: "none", background: "transparent", fontFamily: T.mono, fontSize: "10px", color: T.textDim, cursor: "pointer", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.06em", flexShrink: 0 }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: `16px ${px}` }}>
         {/* DAILY PREP */}
-        <DailyPrepModule mobile={mobile} onIntegrationOpen={setIntegrationItem} />
+        <div id="section-prep"><DailyPrepModule mobile={mobile} onIntegrationOpen={setIntegrationItem} /></div>
 
         {/* SEARCH */}
-        <div style={{ marginBottom: "14px" }}>
-          <div style={{ display: "flex", gap: "6px", flexDirection: mobile ? "column" : "row" }}>
+        <div id="section-search" style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: T.r, padding: mobile ? "16px" : "22px 24px", marginBottom: "20px" }}>
+          <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>Ask Sonar</div>
+          <div style={{ display: "flex", gap: "8px", flexDirection: mobile ? "column" : "row" }}>
             <div style={{ flex: 1, position: "relative" }}>
               <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSearch()}
-                placeholder={mobile ? '"Who needs eng leadership right now?"' : 'Ask anything across your signals... "Which companies need eng leadership?" "What\u2019s Paradigm surfacing?"'}
-                style={{ width: "100%", padding: "11px 14px", paddingRight: searchActive ? "32px" : "14px", background: T.surface, border: `1px solid ${searchActive ? T.accent : T.border}`, borderRadius: T.r, fontFamily: T.sans, fontSize: "13px", color: T.text, outline: "none", boxSizing: "border-box" }} />
-              {searchActive && <span onClick={clearSearch} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", fontFamily: T.mono, fontSize: "13px", color: T.textDim, cursor: "pointer" }}>{"\u2715"}</span>}
+                placeholder={mobile ? '"Who needs eng leadership right now?"' : 'Ask anything \u2014 "Which companies need eng leadership?" \u00b7 "What comp pressure is Andreessen surfacing?" \u00b7 "Where are the capability gaps?"'}
+                style={{ width: "100%", padding: mobile ? "12px 14px" : "14px 16px", paddingRight: searchActive ? "36px" : "16px", background: T.bg, border: `1px solid ${searchActive ? T.accent : T.border}`, borderRadius: T.r, fontFamily: T.sans, fontSize: "14px", color: T.text, outline: "none", boxSizing: "border-box" }} />
+              {searchActive && <span onClick={clearSearch} style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontFamily: T.mono, fontSize: "14px", color: T.textDim, cursor: "pointer" }}>{"\u2715"}</span>}
             </div>
             <Tooltip id="askSonar">
-              <button onClick={handleSearch} disabled={!searchQuery.trim()} style={{ padding: mobile ? "10px" : "0 18px", border: "none", borderRadius: T.r, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: T.accent, color: "#fff", whiteSpace: "nowrap" }}>
+              <button onClick={handleSearch} disabled={!searchQuery.trim()} style={{ padding: mobile ? "13px 20px" : "14px 28px", border: "none", borderRadius: T.r, fontFamily: T.mono, fontSize: "12px", fontWeight: 600, cursor: "pointer", background: T.accent, color: "#fff", whiteSpace: "nowrap", letterSpacing: "0.04em" }}>
                 {searchLoading ? "Analyzing..." : "Ask Sonar"}
               </button>
             </Tooltip>
@@ -1031,7 +1056,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
         </div>
 
         {/* STATS */}
-        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: mobile ? "8px" : "10px", marginBottom: "14px" }}>
+        <div id="section-signals" style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: mobile ? "8px" : "10px", marginBottom: "14px" }}>
           {[
             [`Signals (${periodLabel})`, filtered.length, `${new Set(filtered.map(s => s.vcRef)).size} VCs`],
             ["Active VCs", activeVCs, `of ${VC_RELATIONSHIPS.length}`],
@@ -1220,7 +1245,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
 
         {/* VCs TAB */}
         {tab === "vcs" && (
-          <div>
+          <div id="section-vcs">
             <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim, marginBottom: "8px" }}>
               {activeVCs} active · {VC_RELATIONSHIPS.filter(v => v.tier === "building").length} building · {VC_RELATIONSHIPS.filter(v => v.tier === "prospect").length} prospect
             </div>
@@ -1250,7 +1275,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
         )}
 
         {/* DATA SYNC */}
-        <div style={{ marginTop: "24px", borderTop: `1px solid ${T.borderSubtle}`, paddingTop: "20px" }}>
+        <div id="section-sync" style={{ marginTop: "24px", borderTop: `1px solid ${T.borderSubtle}`, paddingTop: "20px" }}>
           <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Data Sync</div>
           <IntakeModule mobile={mobile} />
         </div>
