@@ -45,6 +45,30 @@ const SIGNALS = [
   { id: 14, date: "2026-05-02", company: "Cohere", stage: "Series B", func: "Engineering", type: "hiring_trigger", signal: "Scaling eng team for on-premise enterprise deployment. Need 4-5 senior engineers with both ML systems and enterprise software experience. Searching 3 months with no strong candidates clearing both bars.", source: "Founder meeting", vcRef: "Index Ventures", enrichment: { raised: "$270M Series B", headcount: "300", news: "Command R+ outperforming competitors on enterprise RAG benchmarks" } },
   { id: 15, date: "2026-05-01", company: "Notion", stage: "Series C", func: "Design", type: "capability_gap", signal: "AI features creating design debt. Need design systems lead who understands AI interaction patterns. Very specific profile.", source: "VC talent partner", vcRef: "Sequoia", enrichment: { raised: "$275M Series C", headcount: "500+", news: "Notion AI reaching feature parity with standalone AI tools" } },
 ];
+const SIGNAL_ACTIONS = {
+  1:  { nextSteps: ["Follow up on VP Eng timing — Series A closes next month", "Send 3 VP Eng candidate profiles this week"], strategicRecs: ["Pitch retained VP Eng search now — 30-day window before close", "Use as Series A first-eng-leader case study for VC distribution"], due: "2026-05-21" },
+  2:  { nextSteps: ["Send platform/product split case studies", "Sync with Shannon at a16z on portfolio pattern"], strategicRecs: ["Cross-sell: 3 other Series B companies need the same restructure", "Build org design content for VC talent partner distribution"], due: "2026-05-20" },
+  3:  { nextSteps: ["Share ML eng comp benchmarking data", "Propose creative equity structure frameworks"], strategicRecs: ["Publish quarterly ML comp report as Riviera IP — high VC distribution value", "Alert Greylock portfolio proactively to comp pressure trend"], due: "2026-05-19" },
+  4:  { nextSteps: ["Send eng manager candidate profiles", "Share player-coach vs. pure manager decision framework"], strategicRecs: ["60-day window — start search immediately for best close odds", "High-visibility mandate: Devin/Cognition is a marquee AI brand"], due: "2026-05-18" },
+  5:  { nextSteps: ["Send Head of Design candidate longlist", "Introduce design research methodology frameworks"], strategicRecs: ["Bundle design + UX research search — rare profile commands full retained fee", "Flag design leadership gap to a16z as a fintech portfolio pattern"], due: "2026-05-24" },
+  6:  { nextSteps: ["Share pod org design templates from Stripe/Notion", "Propose Eng Manager search alongside pod rollout"], strategicRecs: ["Propose 2–3 Eng Manager cluster search — efficiency play for Riviera", "4th infra company at this inflection point — codify as a playbook"], due: "2026-05-23" },
+  7:  { nextSteps: ["Build distributed systems/GPU technical screen", "Send 3 senior inference engineer profiles"], strategicRecs: ["Get on retainer before Series A — first mover advantage", "Co-building hiring bar documentation creates long-term lock-in"], due: "2026-05-22" },
+  8:  { nextSteps: ["Share Series C ML infra PM comp benchmarking", "Offer market data presentation to W&B leadership team"], strategicRecs: ["Series C ML tooling PM comp report — distributable to all VC talent partners", "Identify top 5 PMs at attrition risk across the portfolio"], due: "2026-05-21" },
+  9:  { nextSteps: ["Send staff+ eng profiles for vertical ownership model", "Follow up with Accel portfolio ops on search mandate"], strategicRecs: ["Propose 3–5 staff eng cluster search — premium retained project", "v0 AI traction signals an upcoming PM search next quarter"], due: "2026-05-25" },
+  10: { nextSteps: ["Build IR + LLM engineer shortlist from research pipeline", "Schedule comp discussion with General Catalyst talent"], strategicRecs: ["Rare skillset = high-fee retained opportunity — move fast", "Source IR researchers from Google Search and academic NLP programs"], due: "2026-05-26" },
+  11: { nextSteps: ["Present eng director candidate profiles", "Share player-coach framework tailored to 12-person team dynamics"], strategicRecs: ["12-month exclusive retained search — close before A-round velocity peaks", "Connect Redpoint talent to Riviera's Series A eng leadership track record"], due: "2026-05-22" },
+  12: { nextSteps: ["Send commercial-focused PM profiles", "Share OS/commercial split case studies from Elastic and Confluent"], strategicRecs: ["High-fee commercial PM search at Series C — prioritize outreach this week", "Pattern: all OS companies need this split at $50M ARR — proactive VC brief"], due: "2026-05-24" },
+  13: { nextSteps: ["Share equity refresh benchmarking for fintech Series C", "Offer to facilitate stay interviews with at-risk eng team"], strategicRecs: ["Attrition risk = replacement search pipeline — get ahead of it now", "Flag to Founders Fund as a portfolio-wide Series C retention risk"], due: "2026-05-21" },
+  14: { nextSteps: ["Build on-prem deployment engineer shortlist from enterprise companies", "Send ML systems + enterprise software hybrid profiles"], strategicRecs: ["3 months without a hire = urgent retained search mandate ready to close", "Index Ventures intro: propose portfolio-wide ML infra hiring support"], due: "2026-05-22" },
+  15: { nextSteps: ["Build AI design systems specialist shortlist", "Send Sequoia talent team Riviera's AI product design expertise overview"], strategicRecs: ["AI interaction design gap exists across 5+ Sequoia portfolio companies — pattern brief", "Build AI design candidate pool now before demand peaks"], due: "2026-05-25" },
+};
+const PATTERN_ACTIONS = [
+  { id: 1, recommendation: "Build a dedicated player-coach candidate pool — 5 companies need this archetype simultaneously. Proactive pool means faster closes and a premium positioning story.", due: "2026-05-31" },
+  { id: 2, recommendation: "Create a 'Series A Eng Leadership Playbook' for VC talent partners. Positions Riviera as the specialist firm for the most critical early-stage hire.", due: "2026-05-28" },
+  { id: 3, recommendation: "Proactively brief OS-stage companies in VC portfolios on the commercial product split pattern before they ask — generates inbound mandates.", due: "2026-05-28" },
+  { id: 4, recommendation: "Publish a quarterly ML Compensation Report as Riviera IP. Distributable to all VC talent partners, creates a recurring touchpoint, positions Riviera as the data source.", due: "2026-05-31" },
+  { id: 5, recommendation: "Launch a 'Design Leadership in Infrastructure' proactive recruiting campaign. Three companies need this simultaneously — cluster approach cuts cost per placement.", due: "2026-05-28" },
+];
 const PATTERNS = [
   { id: 1, theme: "Player-coach hiring archetype", count: 5, stages: ["Series A", "Series B"], signal: "5 companies in last 30 days specifically asked about player-coach eng leaders. Post-layoff market is pushing companies toward senior ICs who can manage small teams.", funcs: ["Engineering"], trend: "up" },
   { id: 2, theme: "VP Eng timing at Series A", count: 4, stages: ["Series A"], signal: "4 Series A companies debating first VP Eng hire. Pattern: 20-30 person companies, non-technical founder, hitting scaling wall.", funcs: ["Engineering"], trend: "up" },
@@ -397,39 +421,123 @@ const IntakeModule = ({ mobile }) => {
 };
 
 // ─── SIGNAL CARD ───
-const SignalCard = ({ s, expanded, onToggle, mobile }) => (
-  <div onClick={onToggle} style={{ padding: mobile ? "10px" : "12px 14px", background: expanded ? T.surfaceActive : T.surface, borderRadius: T.r, border: `1px solid ${expanded ? T.border : T.borderSubtle}`, cursor: "pointer" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px", flexWrap: "wrap" }}>
-          <span style={{ fontFamily: T.sans, fontSize: "13px", fontWeight: 600, color: T.text }}>{s.company}</span>
-          <StageTag stage={s.stage} />
-          <Tag label={TYPE_LABELS[s.type]} color={TYPE_COLORS[s.type]} bg={TYPE_BGS[s.type]} />
-          {!mobile && <Tag label={s.func} color={T.textMuted} bg="rgba(139,141,152,0.08)" />}
-        </div>
-        <p style={{ fontFamily: T.sans, fontSize: "13px", color: T.textMuted, lineHeight: "1.5", margin: 0 }}>{s.signal}</p>
-        {expanded && (
-          <div style={{ marginTop: "10px" }}>
-            <div style={{ display: "flex", gap: "12px", marginBottom: "4px", flexWrap: "wrap" }}>
-              <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim }}>{s.source}</span>
-              {s.vcRef && <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.accent }}>VC: {s.vcRef}</span>}
-              {mobile && <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim }}>{s.func}</span>}
-            </div>
-            {s.enrichment && (
-              <div style={{ marginTop: "8px", padding: "8px 10px", background: T.bg, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
-                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", marginBottom: "6px" }}>Enrichment <span style={{ color: T.accent }}>via Sutro</span></div>
-                {s.enrichment.raised && <div style={{ fontFamily: T.sans, fontSize: "11px", color: T.textMuted, marginBottom: "2px" }}><span style={{ color: T.green }}>$</span> {s.enrichment.raised}</div>}
-                {s.enrichment.headcount && <div style={{ fontFamily: T.sans, fontSize: "11px", color: T.textMuted, marginBottom: "2px" }}>{"\u25C6"} {s.enrichment.headcount}</div>}
-                {s.enrichment.news && <div style={{ fontFamily: T.sans, fontSize: "11px", color: T.textMuted }}>{"\u2192"} {s.enrichment.news}</div>}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{s.date.slice(5)}</span>
-    </div>
+const FieldRow = ({ label, value, color }) => (
+  <div style={{ display: "flex", gap: "6px", marginBottom: "3px" }}>
+    <span style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", width: "80px", flexShrink: 0, paddingTop: "1px" }}>{label}</span>
+    <span style={{ fontFamily: T.sans, fontSize: "11px", color: color || T.textMuted }}>{value}</span>
   </div>
 );
+const SignalCard = ({ s, expanded, onToggle, onSendToStrategy, mobile }) => {
+  const actions = SIGNAL_ACTIONS[s.id] || {};
+  return (
+    <div onClick={onToggle} style={{ padding: mobile ? "10px" : "12px 14px", background: expanded ? T.surfaceActive : T.surface, borderRadius: T.r, border: `1px solid ${expanded ? T.border : T.borderSubtle}`, cursor: "pointer" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px", flexWrap: "wrap" }}>
+            <span style={{ fontFamily: T.sans, fontSize: "13px", fontWeight: 600, color: T.text }}>{s.company}</span>
+            <StageTag stage={s.stage} />
+            <Tag label={TYPE_LABELS[s.type]} color={TYPE_COLORS[s.type]} bg={TYPE_BGS[s.type]} />
+            {!mobile && <Tag label={s.func} color={T.textMuted} bg="rgba(139,141,152,0.08)" />}
+          </div>
+          <p style={{ fontFamily: T.sans, fontSize: "13px", color: T.textMuted, lineHeight: "1.5", margin: 0 }}>{s.signal}</p>
+          {expanded && (
+            <div style={{ marginTop: "12px" }} onClick={e => e.stopPropagation()}>
+              <div style={{ padding: "10px 12px", background: T.bg, borderRadius: T.r, border: `1px solid ${T.borderSubtle}`, marginBottom: "8px" }}>
+                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Signal Details</div>
+                <FieldRow label="Source" value={s.source} />
+                <FieldRow label="VC Ref" value={s.vcRef || "—"} color={s.vcRef ? T.accent : T.textDim} />
+                <FieldRow label="Function" value={s.func} />
+                <FieldRow label="Stage" value={s.stage} />
+                <FieldRow label="Date" value={s.date} />
+              </div>
+              {s.enrichment && (
+                <div style={{ padding: "10px 12px", background: T.bg, borderRadius: T.r, border: `1px solid ${T.borderSubtle}`, marginBottom: "8px" }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Enrichment <span style={{ color: T.accent }}>via Sutro</span></div>
+                  <FieldRow label="Raised" value={s.enrichment.raised} color={T.green} />
+                  <FieldRow label="Headcount" value={s.enrichment.headcount} />
+                  <FieldRow label="Latest News" value={s.enrichment.news} />
+                </div>
+              )}
+              {actions.nextSteps && (
+                <div style={{ padding: "10px 12px", background: T.bg, borderRadius: T.r, border: `1px solid ${T.borderSubtle}`, marginBottom: "8px" }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.amber, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Next Steps from Call</div>
+                  {actions.nextSteps.map((step, i) => (
+                    <div key={i} style={{ display: "flex", gap: "6px", marginBottom: i < actions.nextSteps.length - 1 ? "5px" : 0 }}>
+                      <span style={{ color: T.amber, fontFamily: T.mono, fontSize: "10px", flexShrink: 0 }}>{">>"}</span>
+                      <span style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted }}>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {actions.strategicRecs && (
+                <div style={{ padding: "10px 12px", background: "rgba(79,140,255,0.04)", borderRadius: T.r, border: `1px solid ${T.accentDim}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.accent, textTransform: "uppercase", letterSpacing: "0.06em" }}>Strategic Next Steps</div>
+                    {onSendToStrategy && <button onClick={e => { e.stopPropagation(); onSendToStrategy(s.id); }} style={{ padding: "3px 8px", border: `1px solid ${T.accent}`, borderRadius: "3px", fontFamily: T.mono, fontSize: "9px", cursor: "pointer", background: T.accentDim, color: T.accent, textTransform: "uppercase", letterSpacing: "0.04em" }}>+ Strategy</button>}
+                  </div>
+                  {actions.strategicRecs.map((rec, i) => (
+                    <div key={i} style={{ display: "flex", gap: "6px", marginBottom: i < actions.strategicRecs.length - 1 ? "5px" : 0 }}>
+                      <span style={{ color: T.accent, fontFamily: T.mono, fontSize: "10px", flexShrink: 0 }}>*</span>
+                      <span style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted }}>{rec}</span>
+                    </div>
+                  ))}
+                  {actions.due && <div style={{ marginTop: "8px", fontFamily: T.mono, fontSize: "9px", color: T.textDim }}>Due: {actions.due}</div>}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{s.date.slice(5)}</span>
+      </div>
+    </div>
+  );
+};
+
+// ─── INTEGRATION MODAL ───
+const INTEGRATION_APPS = [
+  { name: "Notion", color: "#fff", bg: "#000", icon: "N" },
+  { name: "Linear", color: "#fff", bg: "#5E6AD2", icon: "L" },
+  { name: "Salesforce", color: "#fff", bg: "#00A1E0", icon: "SF" },
+  { name: "HubSpot", color: "#fff", bg: "#FF7A59", icon: "HS" },
+];
+const IntegrationModal = ({ item, onClose }) => {
+  const [copied, setCopied] = useState(false);
+  const [appMsg, setAppMsg] = useState(null);
+  const text = `[${(item.type || "").replace(/_/g, " ").toUpperCase()}] ${item.title}\nSource: ${item.source?.name || ""}\nMentioned: ${item.mentioned || ""}\nDue: ${item.due || ""}`;
+  const copy = () => {
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
+  };
+  return createPortal(
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }} onClick={onClose}>
+      <div style={{ background: T.surface, borderRadius: T.r, border: `1px solid ${T.border}`, padding: "20px", width: "100%", maxWidth: "400px", boxShadow: T.shadow }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+          <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.accent, textTransform: "uppercase", letterSpacing: "0.08em" }}>Send to App</span>
+          <span style={{ cursor: "pointer", color: T.textDim, fontSize: "18px", lineHeight: 1 }} onClick={onClose}>×</span>
+        </div>
+        <div style={{ padding: "10px 12px", background: T.bg, borderRadius: T.r, marginBottom: "14px", border: `1px solid ${T.borderSubtle}` }}>
+          <div style={{ fontFamily: T.sans, fontSize: "12px", fontWeight: 600, color: T.text, marginBottom: "4px" }}>{item.title}</div>
+          <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim }}>Source: {item.source?.name}</div>
+          {item.due && <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.amber, marginTop: "2px" }}>Due: {item.due}</div>}
+        </div>
+        <button onClick={copy} style={{ width: "100%", padding: "9px", border: `1px solid ${T.border}`, borderRadius: T.r, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: copied ? T.greenDim : T.surfaceActive, color: copied ? T.green : T.text, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          {copied ? "Copied to clipboard ✓" : "Copy to clipboard"}
+        </button>
+        <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Direct integration</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+          {INTEGRATION_APPS.map(app => (
+            <button key={app.name} onClick={() => setAppMsg(app.name)} style={{ padding: "8px 10px", border: `1px solid ${T.border}`, borderRadius: T.r, fontFamily: T.sans, fontSize: "12px", cursor: "pointer", background: appMsg === app.name ? T.surfaceActive : T.bg, color: appMsg === app.name ? T.textDim : T.text, display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ width: "20px", height: "20px", borderRadius: "4px", background: appMsg === app.name ? T.border : app.bg, color: app.color, fontFamily: T.mono, fontSize: "9px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{app.icon}</span>
+              {appMsg === app.name ? "OAuth required" : app.name}
+            </button>
+          ))}
+        </div>
+        {appMsg && <div style={{ marginTop: "10px", fontFamily: T.mono, fontSize: "9px", color: T.textDim, textAlign: "center" }}>OAuth setup required in production to connect {appMsg}</div>}
+      </div>
+    </div>,
+    document.body
+  );
+};
 
 // ─── VC CARD (mobile) / ROW (desktop) ───
 const VCCard = ({ v }) => (
@@ -495,6 +603,10 @@ export default function SignalBoard() {
   const [searchResult, setSearchResult] = useState(null);
   const [briefNarrative, setBriefNarrative] = useState(null);
   const [briefLoading, setBriefLoading] = useState(false);
+  const [pinnedSignalIds, setPinnedSignalIds] = useState([]);
+  const [integrationItem, setIntegrationItem] = useState(null);
+  const [strategyPeriod, setStrategyPeriod] = useState("week");
+  const handlePinSignal = (signalId) => setPinnedSignalIds(prev => prev.includes(signalId) ? prev : [...prev, signalId]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -724,7 +836,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
         {/* TABS + TIME */}
         <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: mobile ? "8px" : "0", marginBottom: "14px" }}>
           <ScrollRow>
-            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"], ["brief", "Exec Brief", null]].map(([k, label, tip]) => {
+            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"], ["strategy", "Strategy", null], ["brief", "Exec Brief", null]].map(([k, label, tip]) => {
               const btn = <button key={k} onClick={() => setTab(k)} style={{ padding: "7px 14px", borderRadius: "4px", border: `1px solid ${tab === k ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: tab === k ? T.surfaceActive : "transparent", color: tab === k ? T.text : T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{label}</button>;
               return tip ? <Tooltip key={k} id={tip}>{btn}</Tooltip> : <React.Fragment key={k}>{btn}</React.Fragment>;
             })}
@@ -753,7 +865,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
             <div style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim, marginBottom: "8px" }}>{filtered.length} signals</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {filtered.map(s => (
-                <SignalCard key={s.id} s={s} expanded={expandedSignal === s.id} onToggle={() => setExpandedSignal(expandedSignal === s.id ? null : s.id)} mobile={mobile} />
+                <SignalCard key={s.id} s={s} expanded={expandedSignal === s.id} onToggle={() => setExpandedSignal(expandedSignal === s.id ? null : s.id)} onSendToStrategy={handlePinSignal} mobile={mobile} />
               ))}
             </div>
           </div>
@@ -892,6 +1004,102 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
           );
         })()}
 
+        {/* STRATEGY TAB */}
+        {tab === "strategy" && (() => {
+          const PERIOD_DAYS = { day: 3, week: 7, month: 30 };
+          const cutoff = new Date(TODAY);
+          cutoff.setDate(cutoff.getDate() + PERIOD_DAYS[strategyPeriod]);
+
+          const allItems = [
+            ...Object.entries(SIGNAL_ACTIONS).flatMap(([sid, actions]) => {
+              const signal = SIGNALS.find(s => s.id === parseInt(sid));
+              if (!signal) return [];
+              const items = [];
+              (actions.nextSteps || []).forEach((step, i) => items.push({
+                id: `sig-${sid}-ns-${i}`, category: "nextStep", title: step,
+                company: signal.company, stage: signal.stage, type: signal.type,
+                mentioned: signal.date, due: actions.due, signalId: parseInt(sid),
+              }));
+              (actions.strategicRecs || []).forEach((rec, i) => items.push({
+                id: `sig-${sid}-sr-${i}`, category: "strategicRec", title: rec,
+                company: signal.company, stage: signal.stage, type: signal.type,
+                mentioned: signal.date, due: actions.due, signalId: parseInt(sid),
+              }));
+              return items;
+            }),
+            ...PATTERN_ACTIONS.map(pa => ({
+              id: `pat-${pa.id}`, category: "pattern", title: pa.recommendation,
+              company: null, stage: null, type: null,
+              mentioned: "2026-05-16", due: pa.due, patternId: pa.id,
+            })),
+          ];
+
+          const filtered = allItems.filter(item => !item.due || new Date(item.due) <= cutoff);
+          const pinned = filtered.filter(item => item.signalId && pinnedSignalIds.includes(item.signalId));
+          const unpinned = filtered.filter(item => !(item.signalId && pinnedSignalIds.includes(item.signalId)));
+          const sorted = [...pinned, ...unpinned];
+
+          const catLabel = { nextStep: "Next Step", strategicRec: "Strategic Rec", pattern: "Pattern" };
+          const catColor = { nextStep: T.amber, strategicRec: T.accent, pattern: T.purple };
+          const catBg = { nextStep: T.amberDim, strategicRec: T.accentDim, pattern: T.purpleDim };
+
+          return (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+                <div style={{ display: "flex", gap: "5px" }}>
+                  {["day", "week", "month"].map(p => (
+                    <button key={p} onClick={() => setStrategyPeriod(p)} style={{ padding: "5px 12px", borderRadius: "4px", border: `1px solid ${strategyPeriod === p ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "10px", cursor: "pointer", background: strategyPeriod === p ? T.surfaceActive : "transparent", color: strategyPeriod === p ? T.text : T.textDim, textTransform: "capitalize" }}>{p}</button>
+                  ))}
+                </div>
+                <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim }}>{sorted.length} items due within {strategyPeriod === "day" ? "3 days" : strategyPeriod === "week" ? "7 days" : "30 days"}</span>
+              </div>
+
+              {sorted.length === 0 && (
+                <div style={{ padding: "24px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}`, textAlign: "center" }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "11px", color: T.textDim }}>No items due in this period</div>
+                </div>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                {sorted.map(item => {
+                  const isPinned = item.signalId && pinnedSignalIds.includes(item.signalId);
+                  return (
+                    <div key={item.id} style={{ padding: mobile ? "10px" : "12px 14px", background: T.surface, borderRadius: T.r, border: `1px solid ${isPinned ? T.accent : T.borderSubtle}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "5px", flexWrap: "wrap" }}>
+                            <Tag label={catLabel[item.category]} color={catColor[item.category]} bg={catBg[item.category]} />
+                            {item.company && <span style={{ fontFamily: T.sans, fontSize: "12px", fontWeight: 600, color: T.text }}>{item.company}</span>}
+                            {item.stage && <StageTag stage={item.stage} />}
+                            {item.type && <Tag label={TYPE_LABELS[item.type]} color={TYPE_COLORS[item.type]} bg={TYPE_BGS[item.type]} />}
+                            {isPinned && <Tag label="Pinned" color={T.accent} bg={T.accentDim} />}
+                          </div>
+                          <p style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted, lineHeight: "1.5", margin: "0 0 8px 0" }}>{item.title}</p>
+                          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                            <span style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim }}>Mentioned: {item.mentioned}</span>
+                            {item.due && <span style={{ fontFamily: T.mono, fontSize: "9px", color: T.amber }}>Due: {item.due}</span>}
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: "5px", flexShrink: 0, flexDirection: mobile ? "column" : "row" }}>
+                          <button onClick={() => setIntegrationItem({ title: item.title, type: item.category, source: { name: item.company || (item.patternId ? `Pattern #${item.patternId}` : "Sonar") }, mentioned: item.mentioned, due: item.due })} style={{ padding: "4px 9px", border: `1px solid ${T.border}`, borderRadius: "3px", fontFamily: T.mono, fontSize: "9px", cursor: "pointer", background: T.surfaceActive, color: T.textMuted, textTransform: "uppercase", letterSpacing: "0.04em", whiteSpace: "nowrap" }}>To-do</button>
+                          <button onClick={() => setIntegrationItem({ title: item.title, type: item.category, source: { name: item.company || (item.patternId ? `Pattern #${item.patternId}` : "Sonar") }, mentioned: item.mentioned, due: item.due })} style={{ padding: "4px 9px", border: `1px solid ${T.border}`, borderRadius: "3px", fontFamily: T.mono, fontSize: "9px", cursor: "pointer", background: T.surfaceActive, color: T.textMuted, textTransform: "uppercase", letterSpacing: "0.04em", whiteSpace: "nowrap" }}>CRM</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {pinnedSignalIds.length > 0 && (
+                <div style={{ marginTop: "12px", padding: "10px 12px", background: T.bg, borderRadius: T.r, border: `1px solid ${T.borderSubtle}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontFamily: T.mono, fontSize: "10px", color: T.textDim }}>{pinnedSignalIds.length} signal{pinnedSignalIds.length > 1 ? "s" : ""} pinned from Signals tab</span>
+                  <button onClick={() => setPinnedSignalIds([])} style={{ padding: "3px 8px", border: `1px solid ${T.borderSubtle}`, borderRadius: "3px", fontFamily: T.mono, fontSize: "9px", cursor: "pointer", background: "transparent", color: T.textDim, textTransform: "uppercase" }}>Clear</button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* VCs TAB */}
         {tab === "vcs" && (
           <div>
@@ -923,6 +1131,7 @@ Write a 3-sentence executive summary of this BD activity. Name specific companie
           </div>
         )}
       </div>
+      {integrationItem && <IntegrationModal item={integrationItem} onClose={() => setIntegrationItem(null)} />}
       <footer style={{ marginTop: "auto", padding: mobile ? "28px 16px" : "32px 24px", borderTop: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
         <span style={{ fontFamily: T.mono, fontSize: "11px", color: T.textMuted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Sonar · Signal Intelligence</span>
         <a href="https://github.com/beingmtm714/sonar-riviera" target="_blank" rel="noopener noreferrer" style={{ fontFamily: T.mono, fontSize: "11px", color: T.accent, textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", border: `1px solid ${T.border}`, borderRadius: T.r, background: T.surface }}>
