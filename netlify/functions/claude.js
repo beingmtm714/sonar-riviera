@@ -6,6 +6,7 @@ exports.handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body);
+    const { skipWebSearch, ...claudeBody } = body;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -13,11 +14,11 @@ exports.handler = async (event) => {
         "Content-Type": "application/json",
         "x-api-key": process.env.Anthropic_Key,
         "anthropic-version": "2023-06-01",
-        "anthropic-beta": "web-search-2025-03-05",
+        ...(!skipWebSearch && { "anthropic-beta": "web-search-2025-03-05" }),
       },
       body: JSON.stringify({
-        ...body,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        ...claudeBody,
+        ...(!skipWebSearch && { tools: [{ type: "web_search_20250305", name: "web_search" }] }),
       }),
     });
 

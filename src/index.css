@@ -54,6 +54,13 @@ body {
   margin: 0;
 }
 
+@media print {
+  body * { visibility: hidden; }
+  #brief-content, #brief-content * { visibility: visible; }
+  #brief-content { position: absolute; inset: 0; padding: 32px; background: white; color: black; }
+  #brief-content button { display: none; }
+}
+
 #root {
   width: 100%;
   min-height: 100svh;

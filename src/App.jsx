@@ -171,6 +171,51 @@ const Tooltip = ({ id, children }) => {
   );
 };
 
+// ─── CHART COMPONENTS ───
+const BarChart = ({ items, maxVal }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+    {items.map(({ label, value, color }) => (
+      <div key={label}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+          <span style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted }}>{label}</span>
+          <span style={{ fontFamily: T.mono, fontSize: "11px", color: color || T.accent, fontWeight: 700 }}>{value}</span>
+        </div>
+        <div style={{ height: "4px", background: T.borderSubtle, borderRadius: "2px", overflow: "hidden" }}>
+          <div style={{ width: `${Math.min((value / maxVal) * 100, 100)}%`, height: "100%", background: color || T.accent, borderRadius: "2px", transition: "width 0.5s ease" }} />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const WeeklyBars = ({ signals }) => {
+  const base = new Date("2026-05-18");
+  const weeks = Array.from({ length: 8 }, (_, i) => {
+    const end = new Date(base); end.setDate(base.getDate() - (7 - i - 1) * 7);
+    const start = new Date(end); start.setDate(end.getDate() - 7);
+    const count = signals.filter(s => { const d = new Date(s.date); return d >= start && d < end; }).length;
+    return { label: `${start.getMonth() + 1}/${start.getDate()}`, count };
+  });
+  const maxCount = Math.max(...weeks.map(w => w.count), 1);
+  const barW = 28; const gap = 8; const chartH = 60;
+  const svgW = weeks.length * (barW + gap) - gap;
+  return (
+    <svg width="100%" viewBox={`0 0 ${svgW} ${chartH + 18}`} style={{ overflow: "visible" }}>
+      {weeks.map((w, i) => {
+        const barH = w.count > 0 ? Math.max((w.count / maxCount) * chartH, 4) : 0;
+        const x = i * (barW + gap);
+        return (
+          <g key={i}>
+            <rect x={x} y={chartH - barH} width={barW} height={barH || 2} fill={w.count > 0 ? T.accent : T.borderSubtle} rx="2" />
+            <text x={x + barW / 2} y={chartH + 13} textAnchor="middle" fill={T.textDim} fontSize="8" fontFamily="monospace">{w.label}</text>
+            {w.count > 0 && <text x={x + barW / 2} y={chartH - barH - 4} textAnchor="middle" fill={T.accent} fontSize="9" fontFamily="monospace">{w.count}</text>}
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
 // ─── INTAKE MODULE ───
 const IntakeModule = ({ mobile }) => {
   const [intakeMode, setIntakeMode] = useState("calendar");
@@ -434,6 +479,8 @@ export default function SignalBoard() {
   const [searchActive, setSearchActive] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSearchResult] = useState(null);
+  const [briefNarrative, setBriefNarrative] = useState(null);
+  const [briefLoading, setBriefLoading] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -498,6 +545,48 @@ export default function SignalBoard() {
     setSearchLoading(false);
   };
   const clearSearch = () => { setSearchQuery(""); setSearchActive(false); setSearchResult(null); };
+
+  const generateBrief = async () => {
+    setBriefLoading(true);
+    try {
+      const briefSignals = SIGNALS.filter(s => filterByTime(s.date, "1m"));
+      const typeBreakdown = Object.entries(
+        briefSignals.reduce((acc, s) => ({ ...acc, [s.type]: (acc[s.type] || 0) + 1 }), {})
+      ).map(([k, v]) => `${v} ${TYPE_LABELS_FULL[k]}`).join(", ");
+      const topVCs = Object.entries(
+        briefSignals.reduce((acc, s) => ({ ...acc, [s.vcRef]: (acc[s.vcRef] || 0) + 1 }), {})
+      ).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} (${v})`).join(", ");
+      const trendingPatterns = PATTERNS.filter(p => p.trend === "up").map(p => p.theme).join("; ");
+
+      const prompt = `BD performance this month:
+Signals: ${briefSignals.length} captured across ${new Set(briefSignals.map(s => s.company)).size} companies. Breakdown: ${typeBreakdown}. Top VC sources: ${topVCs}.
+VC pipeline: ${activeVCs} active relationships of ${VC_RELATIONSHIPS.length} tracked. ${VC_RELATIONSHIPS.filter(v => v.tier === "building").length} building. ${totalEngagements} commercial engagements attributed.
+Trending patterns: ${trendingPatterns}.
+
+Write a 3-sentence executive summary of this BD activity. Name specific companies, VCs, and numbers. Direct and analytical — no filler.`;
+
+      const response = await fetch("/.netlify/functions/claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 300,
+          skipWebSearch: true,
+          system: "You write concise executive BD briefs for a talent advisory firm. Be specific and direct.",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+      const data = await response.json();
+      if (data.content) {
+        setBriefNarrative(data.content.filter(i => i.type === "text").map(i => i.text).join(""));
+      } else {
+        setBriefNarrative(`Error: ${data.error?.message || "No response."}`);
+      }
+    } catch (e) {
+      setBriefNarrative("Failed to generate. Try again.");
+    }
+    setBriefLoading(false);
+  };
 
   const filtered = SIGNALS.filter(s => {
     if (!filterByTime(s.date, timePeriod)) return false;
@@ -621,11 +710,10 @@ export default function SignalBoard() {
         {/* TABS + TIME */}
         <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: mobile ? "8px" : "0", marginBottom: "14px" }}>
           <ScrollRow>
-            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"]].map(([k, label, tip]) => (
-              <Tooltip key={k} id={tip}>
-                <button onClick={() => setTab(k)} style={{ padding: "7px 14px", borderRadius: "4px", border: `1px solid ${tab === k ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: tab === k ? T.surfaceActive : "transparent", color: tab === k ? T.text : T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{label}</button>
-              </Tooltip>
-            ))}
+            {[["signals", "Signals", "signals"], ["patterns", "Patterns", "patterns"], ["vcs", "VCs", "vcs"], ["brief", "BD Brief", null]].map(([k, label, tip]) => {
+              const btn = <button key={k} onClick={() => setTab(k)} style={{ padding: "7px 14px", borderRadius: "4px", border: `1px solid ${tab === k ? T.border : T.borderSubtle}`, fontFamily: T.mono, fontSize: "11px", cursor: "pointer", background: tab === k ? T.surfaceActive : "transparent", color: tab === k ? T.text : T.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>{label}</button>;
+              return tip ? <Tooltip key={k} id={tip}>{btn}</Tooltip> : <React.Fragment key={k}>{btn}</React.Fragment>;
+            })}
           </ScrollRow>
           <ScrollRow>
             {TIME_PERIODS.map(p => (
@@ -690,6 +778,105 @@ export default function SignalBoard() {
             </div>
           </div>
         )}
+
+        {/* BRIEF TAB */}
+        {tab === "brief" && (() => {
+          const briefSignals = SIGNALS.filter(s => filterByTime(s.date, "1m"));
+          const typeItems = Object.entries(
+            briefSignals.reduce((acc, s) => ({ ...acc, [s.type]: (acc[s.type] || 0) + 1 }), {})
+          ).map(([k, v]) => ({ label: TYPE_LABELS_FULL[k], value: v, color: TYPE_COLORS[k] })).sort((a, b) => b.value - a.value);
+          const funcItems = Object.entries(
+            briefSignals.reduce((acc, s) => ({ ...acc, [s.func]: (acc[s.func] || 0) + 1 }), {})
+          ).map(([k, v]) => ({ label: k, value: v, color: T.accent })).sort((a, b) => b.value - a.value);
+          const vcItems = [
+            { label: "Active", value: VC_RELATIONSHIPS.filter(v => v.tier === "active").length, color: T.green },
+            { label: "Building", value: VC_RELATIONSHIPS.filter(v => v.tier === "building").length, color: T.amber },
+            { label: "Prospect", value: VC_RELATIONSHIPS.filter(v => v.tier === "prospect").length, color: T.textDim },
+          ];
+          const OKRs = [
+            { label: "Active VC Relationships", current: activeVCs, target: 15, color: T.accent },
+            { label: "Signals This Month", current: briefSignals.length, target: 20, color: T.green },
+            { label: "Commercial Engagements", current: totalEngagements, target: 8, color: T.purple },
+            { label: "Patterns Identified", current: PATTERNS.length, target: 6, color: T.amber },
+          ];
+          return (
+            <div id="brief-content">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+                <div>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>Monthly BD Brief</div>
+                  <div style={{ fontFamily: T.sans, fontSize: "22px", fontWeight: 700, color: T.text, letterSpacing: "-0.02em" }}>May 2026</div>
+                </div>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <button onClick={generateBrief} disabled={briefLoading} style={{ padding: "8px 14px", border: `1px solid ${T.border}`, borderRadius: T.r, fontFamily: T.mono, fontSize: "10px", cursor: "pointer", background: T.surface, color: briefLoading ? T.textDim : T.text, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    {briefLoading ? "Generating..." : briefNarrative ? "Regenerate" : "Generate Narrative"}
+                  </button>
+                  <button onClick={() => window.print()} style={{ padding: "8px 14px", border: "none", borderRadius: T.r, fontFamily: T.mono, fontSize: "10px", cursor: "pointer", background: T.accent, color: "#fff", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    Export PDF
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: "10px", marginBottom: "14px" }}>
+                {[
+                  { label: "Signals This Month", value: briefSignals.length, sub: `${new Set(briefSignals.map(s => s.company)).size} companies` },
+                  { label: "Active VCs", value: activeVCs, sub: `of ${VC_RELATIONSHIPS.length} tracked` },
+                  { label: "Engagements", value: totalEngagements, sub: "attributed to BD" },
+                  { label: "Patterns", value: PATTERNS.length, sub: `${PATTERNS.filter(p => p.trend === "up").length} trending up` },
+                ].map(({ label, value, sub }) => (
+                  <div key={label} style={{ padding: "12px 14px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
+                    <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>{label}</div>
+                    <div style={{ fontFamily: T.mono, fontSize: "24px", fontWeight: 700, color: T.text, marginBottom: "2px" }}>{value}</div>
+                    <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textMuted }}>{sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginBottom: "14px", padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${briefNarrative ? T.accent : T.borderSubtle}` }}>
+                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Executive Summary</div>
+                {briefNarrative
+                  ? <p style={{ fontFamily: T.sans, fontSize: "13px", color: T.text, lineHeight: "1.7", margin: 0 }}>{briefNarrative}</p>
+                  : <p style={{ fontFamily: T.sans, fontSize: "13px", color: T.textDim, lineHeight: "1.7", margin: 0, fontStyle: "italic" }}>Hit "Generate Narrative" to produce a Claude-written executive summary from this month's signal data.</p>
+                }
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "10px", marginBottom: "14px" }}>
+                <div style={{ padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>Signal Cadence · Last 8 Weeks</div>
+                  <WeeklyBars signals={SIGNALS} />
+                </div>
+                <div style={{ padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>By Signal Type</div>
+                  <BarChart items={typeItems} maxVal={Math.max(...typeItems.map(i => i.value), 1)} />
+                </div>
+                <div style={{ padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>By Function</div>
+                  <BarChart items={funcItems} maxVal={Math.max(...funcItems.map(i => i.value), 1)} />
+                </div>
+                <div style={{ padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
+                  <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>VC Pipeline</div>
+                  <BarChart items={vcItems} maxVal={Math.max(...vcItems.map(i => i.value), 1)} />
+                </div>
+              </div>
+
+              <div style={{ padding: "14px 16px", background: T.surface, borderRadius: T.r, border: `1px solid ${T.borderSubtle}` }}>
+                <div style={{ fontFamily: T.mono, fontSize: "9px", color: T.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>OKR Progress</div>
+                <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
+                  {OKRs.map(({ label, current, target, color }) => (
+                    <div key={label}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
+                        <span style={{ fontFamily: T.sans, fontSize: "12px", color: T.textMuted }}>{label}</span>
+                        <span style={{ fontFamily: T.mono, fontSize: "12px", fontWeight: 700, color }}>{current}<span style={{ color: T.textDim, fontWeight: 400 }}>/{target}</span></span>
+                      </div>
+                      <div style={{ height: "6px", background: T.bg, borderRadius: "3px", overflow: "hidden" }}>
+                        <div style={{ width: `${Math.min((current / target) * 100, 100)}%`, height: "100%", background: color, borderRadius: "3px", transition: "width 0.6s ease" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* VCs TAB */}
         {tab === "vcs" && (
